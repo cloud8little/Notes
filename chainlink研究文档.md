@@ -1,5 +1,5 @@
 
-#### Chainlink VRF
+## Chainlink VRF
 有两种获取随机数的方式，一种利用订阅模式，通过subscription manager进行管理，另外一种则是直接获取
 
 ##### 订阅者模式
@@ -112,9 +112,65 @@ Gas总体消耗有以下几个变量
 
 实验：
 1. 创建subscription,获取subscriptionId, add Funds 2LINK, 然后requestRandomWords 有pending的请求提示funds不足 明天看一下是不是能成功
-2. 
+2. 果然还是不成功，充了一些LINK之后马上成功
+
+关于随机数的安全性
+- 用requestId来匹配每个获取随机数的请求，请求三个随机数，但是先后顺序可能处理不一样，因此用requestId来确定先后顺序是比较稳妥的
+- 选择一个安全的区块等待时间
+- 不要重发请求，当你并没有立即获得结果的时候
+- 不要接受任何bids/bets/inputs在已经发出随机数请求之后
+- fulfillRandomWords 不能回退revert
+- 在合约中继承VRFConsumerBaseV2，不要重写rawFulfillRandomness方法
+- 直接方式，继承VRFv2WrapperConsumer
 
 
-   
+## Chainlink Data Feeds
 
+1. 获取最新价格  AggregatorV3Interface().latestRoundData()
+2. Goerli 测试网 ETH/USD 0xD4a33860578De61DBAbDc8BFdb98FD742fA7028e
+3. 关于roundId的概念
+有两种roundId，一种是proxy里的roundId, 一种是aggregatorRoundId
+roundId = uint80((uint256(phaseId) << 64) | aggregatorRoundId);
+latestRoundData返回的roundId就是proxy的roundId, 要计算出pahseId和aggregatorRoundId 
+假设roundId = 92233720368547771158
+92233720368547771158 >> 64, 也就是92233720368547771158 / 2^64 = 5 = phaseId
+92233720368547771158 检索最开始的64位，就是aggregatorRoundId = uint64(92233720368547771158)
+
+<code>
+// First parse to BigInt to perform computation with big integers
+const num = BigInt("92233720368547771158")
+const num2 = BigInt("0xFFFFFFFFFFFFFFFF") // Largest 64bits integer
+
+console.log(Number(num >> 64n)) // returns 5 (phaseId)
+console.log(Number(num & num2)) // returns 13078 (aggregatorRoundId) . Use & (AND bitwise operator) which sets each bit to _1_ if both bits are _1_
+</code>
+
+92233720368547771158 - aggregatorRoundId + 1 当前aggreggator的第一轮 直到 92233720368547771158为止
+
+再取小一点的PhaseId,
+
+const phaseId = BigInt("4")
+const aggregatorRoundId = BigInt("1")
+
+roundId = (phaseId << 64n) | aggregatorRoundId // returns 73786976294838206465n
+
+样例
+
+https://github.com/smartcontractkit/libocr/tree/master/contract
+
+
+AccessControlledOffchainAggregator合约变量
+
+billingAccessController不是很理解？？
+
+储备金的价格机： https://docs.chain.link/data-feeds/proof-of-reserve/addresses/
+
+NFT地板价： https://docs.chain.link/data-feeds/nft-floor-price/addresses
+
+L2序列器运行事件种子
+
+1. Chainlink节点每30秒触发一轮OCR并更新sequencer的状态，调用ValidatorProxy，validator proxy会调用ArbitrumValidator合约的validate方法
+2. ArbitrumValidator检查最近的更新和上一次更新是否不一样，如果不一样，发一条消息给Arbitrum inbox合约
+3. inbox合约把消息发给ArbitrumSequencerUptimeFeed合约，调用的updateStatus方法，如果正常运作0， down了为1，同时记录区块时间戳
+4. 《待定》
 
