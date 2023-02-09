@@ -174,3 +174,7 @@ L2序列器运行事件种子
 3. inbox合约把消息发给ArbitrumSequencerUptimeFeed合约，调用的updateStatus方法，如果正常运作0， down了为1，同时记录区块时间戳
 4. 《待定》
 
+FeedRegistry:
+主网合约 0x47Fb2585D2C56Fe188D0E6ec628a38b74fCeeeDf 
+可以直接查询一些token交易对的价格，直接输入token的以太地址就行
+比如： 
