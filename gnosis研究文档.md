@@ -11,8 +11,8 @@ safe address: gor:0xDb2398c0006c2EDfA75A9e223BD0a477C4305730  2/3地址
 - 给这个地址0.1LINK，goerjessica3发起一笔发送给某地址0.1LINK的交易，goerjessica1 Reject了这个交易；goerjessica2看到这笔交易，替换成了发送给自己的0.1LINK的交易；goerjessica1对goerjessica3发起的交易进行了确认
 - 
 
-
-
+GnosisSafeProxyFactory:
+0xa6b71e26c5e0845f74c812102ca7114b6a896ab2
 createProxyWithNonce(address _singleton, bytes initializer, uint256 saltNonce)
 
 singleton: 0x3E5c63644E683549055b9Be8653de26E0B4CD36E  (GnosisSafeL2)
